@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="zh-HK"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
+<title>S Class 拍攝腳本</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Noto+Sans+HK:wght@400;500;700;900&display=swap">
+<style>
+/* Layout: fight-card call sheet — gold rule + condensed time codes, one column of numbered scene cards */
+:root{
+  --bg:#f3f3f0; --paper:#ffffff; --ink:#16181b; --mute:#5d6168; --line:#dcdcd6;
+  --gold:#a8790b; --gold-soft:#f6ecd2; --red:#b3261e; --chip:#ececE7;
+  --f-display:"Barlow Condensed","Noto Sans HK","PingFang HK",sans-serif;
+  --f-body:"Noto Sans HK","PingFang HK","Microsoft JhengHei",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111214; --paper:#1a1c1f; --ink:#eceae4; --mute:#a3a6ad; --line:#2d3035;
+  --gold:#e3b53c; --gold-soft:#2c2616; --red:#ef7a70; --chip:#24272b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111214; --paper:#1a1c1f; --ink:#eceae4; --mute:#a3a6ad; --line:#2d3035;
+  --gold:#e3b53c; --gold-soft:#2c2616; --red:#ef7a70; --chip:#24272b; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.75 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:960px;margin:0 auto;padding-block:28px 80px}
+h1,h2,h3{text-wrap:balance;margin:0}
+h1{font:900 clamp(30px,6vw,46px)/1.15 var(--f-body);letter-spacing:.5px}
+h2{font:900 26px/1.3 var(--f-body);margin-bottom:6px}
+h3{font:700 21px/1.35 var(--f-body)}
+.eyebrow{font:700 15px/1 var(--f-display);letter-spacing:2.5px;text-transform:uppercase;color:var(--gold)}
+.lede{color:var(--mute);font-size:18px;max-width:680px;margin:12px 0 0}
+section{padding-block:40px;border-top:1px solid var(--line)}
+header{padding-block:12px 34px;border-bottom:4px solid var(--gold)}
+.facts{display:flex;flex-wrap:wrap;gap:8px 26px;margin-top:20px;font-size:15px}
+.facts b{font:800 30px/1 var(--f-display);color:var(--gold);display:block;font-variant-numeric:tabular-nums}
+.sub{color:var(--mute);margin:0 0 18px;max-width:700px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--chip);color:var(--ink);white-space:nowrap}
+.pill.vis{background:var(--gold-soft);color:var(--gold)}
+.pill.ad{border:1px solid var(--red);color:var(--red);background:transparent}
+/* TOC */
+.toc{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:8px;margin-top:16px}
+.toc a{display:grid;grid-template-columns:40px 1fr;gap:10px;align-items:baseline;padding:10px 12px;background:var(--paper);border:1px solid var(--line);border-radius:10px;color:var(--ink);text-decoration:none}
+.toc a:hover,.toc a:focus-visible{border-color:var(--gold);outline:none}
+.toc .n{font:800 24px/1 var(--f-display);color:var(--gold);font-variant-numeric:tabular-nums}
+.toc .t{font-weight:700;font-size:15px;line-height:1.45}
+.toc .m{display:block;color:var(--mute);font-weight:400;font-size:13px}
+/* Locations */
+.locs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.loc{margin:0}
+.loc img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;display:block;background:var(--chip)}
+.loc.wide{grid-column:span 2}.loc.wide img{aspect-ratio:auto;height:100%;max-height:300px}
+.loc figcaption{font-size:14px;margin-top:6px;line-height:1.45}
+.loc figcaption b{font:800 18px/1 var(--f-display);color:var(--gold);margin-right:6px}
+/* Schedule */
+.day{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-top:16px}
+.day h3{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
+.day h3 span{font-weight:400;color:var(--mute);font-size:15px}
+.slot{display:grid;grid-template-columns:110px 1fr;gap:12px;padding:9px 0;border-top:1px dashed var(--line)}
+.slot:first-of-type{border-top:none}
+.slot time{font:700 18px/1.5 var(--f-display);font-variant-numeric:tabular-nums;color:var(--gold)}
+.slot p{margin:0}.slot small{color:var(--mute);display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px 20px;min-width:0}
+.box ul{margin:8px 0 0;padding-left:20px}.box li{margin:4px 0}
+/* Script card */
+.sc{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:24px;margin-top:22px;scroll-margin-top:16px}
+.sc-head{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:start}
+.sc-num{font:800 54px/.9 var(--f-display);color:var(--gold);font-variant-numeric:tabular-nums}
+.sc-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.why{margin:16px 0 0;padding:12px 14px;background:var(--gold-soft);border-radius:10px;font-size:15px}
+.why b{color:var(--gold)}
+.ref{margin-top:16px}
+.ref-strip{overflow-x:auto;border-radius:8px}
+.ref-strip img{display:block;height:180px;width:auto;max-width:none}
+.ref-cap{font-size:13px;color:var(--mute);margin-top:6px}
+.ref-cap a{color:var(--gold);font-weight:700}
+.where{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.where figure{margin:0;display:flex;gap:8px;align-items:center;background:var(--chip);border-radius:10px;padding:6px 10px 6px 6px;font-size:13px}
+.where img{width:44px;height:56px;object-fit:cover;border-radius:6px}
+.shots{margin-top:18px;border-top:2px solid var(--ink)}
+.shot{display:grid;grid-template-columns:70px minmax(0,1.25fr) minmax(0,1fr);gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:15px}
+.shot.hd{font-size:12px;font-weight:700;letter-spacing:1px;color:var(--mute);padding:8px 0}
+.shot .t{font:700 17px/1.5 var(--f-display);font-variant-numeric:tabular-nums;color:var(--gold)}
+.shot .say{font-weight:500}
+.shot .say em{font-style:normal;color:var(--mute);font-weight:400}
+.notes{margin-top:16px;display:grid;gap:10px}
+.note{font-size:15px}
+.note b{display:inline-block;min-width:76px;color:var(--mute);font-weight:700}
+.cap{background:var(--chip);border-radius:10px;padding:10px 14px;font-size:15px}
+.adv{border-left:3px solid var(--red);padding:6px 0 6px 12px;font-size:15px}
+.adv b{color:var(--red)}
+.vo{background:var(--chip);border-radius:10px;padding:14px 16px;margin-top:16px;font-size:16px;line-height:1.9}
+.vo p{margin:0 0 6px}
+.own{display:flex;gap:12px;align-items:center;margin-top:14px;font-size:14px;background:var(--gold-soft);border-radius:10px;padding:8px}
+.own img{width:60px;height:80px;object-fit:cover;border-radius:6px}
+footer{color:var(--mute);font-size:13px;text-align:center;padding-top:30px}
+a{color:var(--gold)}
+@media (max-width:640px){
+  .two{grid-template-columns:1fr}
+  .loc.wide{grid-column:span 2}
+  .sc{padding:18px 16px}
+  .sc-head{grid-template-columns:1fr;gap:4px}.sc-num{font-size:40px}
+  .shot{grid-template-columns:56px minmax(0,1fr)}
+  .shot .say{grid-column:2}
+  .shot.hd{display:none}
+  .slot{grid-template-columns:86px 1fr}
+  .ref-strip img{height:150px}
+}
+@media (prefers-reduced-motion:no-preference){.toc a{transition:border-color .15s}}
+</style>
+</head><body>
+
+<main>
+<header>
+  <p class="eyebrow">S Class Studio × Weefedia · 拍攝腳本</p>
+  <h1>13 條短片，兩日拍晒</h1>
+  <p class="lede">每條片都附參考片截圖、拍攝位置同逐秒分鏡，對白已經改成廣東話。拍攝當日，教練、店員同演員跟住呢份就知道企邊、講乜、做乜動作。</p>
+  <div class="facts">
+    <div><b>13</b>條短片腳本</div>
+    <div><b>2</b>日拍攝（第 9 條另計）</div>
+    <div><b>6</b>條可以剪成廣告版</div>
+    <div><b>7–56</b>秒片長</div>
+  </div>
+  <div class="legend">
+    <span class="pill vis">畫面主導</span><span style="font-size:14px;color:var(--mute)">笑位靠動作同剪接，要跟足分鏡拍</span>
+    <span class="pill">對白主導</span><span style="font-size:14px;color:var(--mute)">對住鏡頭講，背熟稿就拍得</span>
+    <span class="pill ad">可做廣告</span><span style="font-size:14px;color:var(--mute)">會另剪 15 秒版本落廣告</span>
+  </div>
+</header>
+
+<section id="list">
+  <h2>13 條片一覽</h2>
+  <p class="sub">你哋 IG 最多人睇嘅幾條片（5.5 萬、3.2 萬、2.1 萬）全部係教練同店員演嘅搞笑短劇，所以第 1 至 5 條都係呢一類，排喺最前。</p>
+  <nav class="toc" aria-label="腳本目錄">
+    <a href="#s1"><span class="n">01</span><span class="t">賊仔打劫，打完第一堂<span class="m">短劇 · 30 秒 · Day 1</span></span></a>
+    <a href="#s2"><span class="n">02</span><span class="t">執錢被拉入館<span class="m">快剪 · 11 秒 · Day 2 · 廣告</span></span></a>
+    <a href="#s3"><span class="n">03</span><span class="t">普通教練 vs S Class 教練<span class="m">短劇 · 35 秒 · Day 1 · 廣告</span></span></a>
+    <a href="#s4"><span class="n">04</span><span class="t">偷飲教練支水，邊走邊學泰拳術語<span class="m">第一身 · 30 秒 · Day 1</span></span></a>
+    <a href="#s5"><span class="n">05</span><span class="t">「你去第二間我唔介意」<span class="m">一鏡到底 · 14 秒 · Day 1</span></span></a>
+    <a href="#s6"><span class="n">06</span><span class="t">「寫字樓入面嘅泰拳館？應該好細啩」<span class="m">對答 · 35 秒 · Day 2 · 廣告</span></span></a>
+    <a href="#s7"><span class="n">07</span><span class="t">等拳套掟中教練<span class="m">一鏡 · 12 秒 · Day 1</span></span></a>
+    <a href="#s8"><span class="n">08</span><span class="t">教練想鑽去字幕後面<span class="m">一鏡 · 7 秒 · Day 1</span></span></a>
+    <a href="#s9"><span class="n">09</span><span class="t">如果全世界嘅教練消失咗<span class="m">故事 · 55 秒 · 另約</span></span></a>
+    <a href="#s10"><span class="n">10</span><span class="t">老闆日記：喺牛頭角開泰拳館<span class="m">對鏡 · 35 秒 · Day 1</span></span></a>
+    <a href="#s11"><span class="n">11</span><span class="t">3 個理由，香港打工仔應該學泰拳<span class="m">對鏡 · 30 秒 · Day 1 · 廣告</span></span></a>
+    <a href="#s12"><span class="n">12</span><span class="t">人哋話東九龍最高私隱度嘅泰拳館<span class="m">導賞 · 24 秒 · Day 2 · 廣告</span></span></a>
+    <a href="#s13"><span class="n">13</span><span class="t">S Class after work 品牌片<span class="m">品牌片 · 36 秒 · Day 2 · 廣告</span></span></a>
+  </nav>
+</section>
+
+<section id="locations">
+  <h2>拍攝場景</h2>
+  <p class="sub">以下相片截自你哋自己嘅片。每條腳本會用英文字母講明喺邊個位拍，例如「B 沙包區」。</p>
+  <div class="locs">
+    <figure class="loc wide"><img src="media/loc_wide.jpg" alt="3000 呎全場，左邊健身波，右邊拳套牆"><figcaption><b>A</b>3000 呎全場（拳套牆、器材區）</figcaption></figure>
+    <figure class="loc"><img src="media/loc_bags.jpg" alt="窗邊一排沙包前面"><figcaption><b>B</b>沙包區（窗邊）</figcaption></figure>
+    <figure class="loc"><img src="media/loc_reception.jpg" alt="黑色前台枱"><figcaption><b>C</b>前台</figcaption></figure>
+    <figure class="loc"><img src="media/loc_lobby.jpg" alt="電梯大堂 S Class Studio 招牌"><figcaption><b>D</b>2 樓電梯大堂（招牌位）</figcaption></figure>
+    <figure class="loc"><img src="media/loc_entrance.jpg" alt="S CLASS 門口 logo 牆"><figcaption><b>E</b>入口 logo 牆</figcaption></figure>
+    <figure class="loc"><img src="media/loc_ring.jpg" alt="擂台圍繩前面"><figcaption><b>F</b>擂台邊</figcaption></figure>
+    <figure class="loc"><img src="media/loc_class.jpg" alt="小班上堂"><figcaption><b>G</b>小班上堂（真學員）</figcaption></figure>
+    <figure class="loc"><img src="media/loc_friday.jpg" alt="藍色燈光 Friday Night"><figcaption><b>H</b>Friday Night 燈光</figcaption></figure>
+    <figure class="loc"><img src="media/loc_cat.jpg" alt="店長 Dollar 貓"><figcaption><b>I</b>Dollar 店長（貓）</figcaption></figure>
+  </div>
+  <p class="sub" style="margin-top:14px">外景：<b>J</b> 偉業街 JC Tower 地下大門同行人路（第 2、6、12、13 條用）。</p>
+</section>
+
+<section id="schedule">
+  <h2>拍攝日程</h2>
+  <p class="sub">以下時間係例子，會跟你哋冇堂嘅時段再調整。Day 2 建議揀禮拜五，夜晚順手拍 Friday Night Club Boxing。</p>
+
+  <div class="day">
+    <h3>Day 1 · 館內短劇 <span>大約 10:00–18:30，全部喺館內</span></h3>
+    <div class="slot"><time>10:00–10:30</time><p>到場、打燈、試咪<small>所有演員換衫、化妝</small></p></div>
+    <div class="slot"><time>10:30–10:50</time><p>#08 教練想鑽去字幕後面<small>教練 A · 場景 F</small></p></div>
+    <div class="slot"><time>10:50–11:20</time><p>#07 等拳套掟中教練<small>教練 A、店員 · 場景 C</small></p></div>
+    <div class="slot"><time>11:20–12:00</time><p>#05「你去第二間我唔介意」<small>教練 A、教練 B、學員演員 1 · 場景 B＋I</small></p></div>
+    <div class="slot"><time>12:00–13:00</time><p>#03 普通教練 vs S Class 教練<small>教練 A、學員演員 1 · 場景 B</small></p></div>
+    <div class="slot"><time>13:00–14:00</time><p>午飯</p></div>
+    <div class="slot"><time>14:00–16:00</time><p>#01 賊仔打劫，打完第一堂<small>全部人＋臨演學員 4–6 位 · 場景 E、C、B、A</small></p></div>
+    <div class="slot"><time>16:00–16:45</time><p>#10 老闆日記<small>老闆 · 7 個位，每句換位</small></p></div>
+    <div class="slot"><time>16:45–17:15</time><p>#11 3 個理由學泰拳<small>教練 B · 場景 B＋插入鏡頭</small></p></div>
+    <div class="slot"><time>17:15–18:15</time><p>#04 偷飲教練支水<small>教練 A、學員演員 1（拍攝者）· 全場走位</small></p></div>
+    <div class="slot"><time>18:15–18:30</time><p>補鏡、收工</p></div>
+  </div>
+
+  <div class="day">
+    <h3>Day 2 · 外景、導賞、品牌片 <span>建議禮拜五，大約 13:00–21:00</span></h3>
+    <div class="slot"><time>13:00–14:30</time><p>#06 懷疑者對答<small>店員、學員演員 2 · 場景 J＋館內 B-roll</small></p></div>
+    <div class="slot"><time>14:30–16:30</time><p>#02 執錢被拉入館<small>學員演員 1、教練 A＋B、店員 · J → D → A → C</small></p></div>
+    <div class="slot"><time>16:30–17:15</time><p>#12 第一身導賞<small>主持（店員或教練）· J → D → 全場</small></p></div>
+    <div class="slot"><time>17:15–19:00</time><p>#13 品牌片：日間部分<small>學員演員 2 位 · E、C、G</small></p></div>
+    <div class="slot"><time>19:00–21:00</time><p>Friday Night Club Boxing<small>#13 夜景、真學員反應、多拍廣告用素材 · 場景 H</small></p></div>
+  </div>
+  <p class="sub" style="margin-top:12px">第 9 條（教練消失）有 6 個唔同場景，包括寫字樓同屋企，建議另約半日，或者做成動畫。</p>
+</section>
+
+<section id="crew">
+  <h2>人手同道具</h2>
+  <div class="two">
+    <div class="box">
+      <h3>需要出鏡嘅人</h3>
+      <ul>
+        <li><b>教練 A</b>：主角，要識搞笑同做表情（#01 #02 #03 #04 #05 #07 #08）</li>
+        <li><b>教練 B</b>：配角、對鏡講解（#01 #05 #11）</li>
+        <li><b>店員／前台</b>：#01 #02 #06 #07 #12</li>
+        <li><b>老闆</b>：#10 老闆日記</li>
+        <li><b>學員演員 1（男）</b>：賊仔、被拉入館、亂打拳嘅學員（#01 #02 #03 #04 #05）</li>
+        <li><b>學員演員 2</b>：懷疑者、品牌片主持（#06 #13）</li>
+        <li><b>臨演學員 4–6 位</b>：#01 結尾拍手、#13 小班畫面</li>
+        <li><b>Dollar 店長</b>：#01 #05 #10（貓肯合作就拍，唔肯就跳過）</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>道具清單</h3>
+      <ul>
+        <li>黑色布袋頭套（#01）</li>
+        <li>拖把 2 支、clipboard、白板同白板筆（#01）</li>
+        <li>軟拳套數對、pad、綁手帶（多條）</li>
+        <li>一張 $100 紙或者「免費試堂券」（#02）</li>
+        <li>樽裝水數支、噴水壺（#04）</li>
+        <li>「試堂」手寫紙牌（#06）</li>
+        <li>墨鏡（#06 懷疑者）</li>
+        <li>手機打開 booking app 畫面（#02）</li>
+        <li>寫字樓衫、西裝褲（#09，如果拍真人版）</li>
+      </ul>
+      <h3 style="margin-top:14px">我哋帶嘅器材</h3>
+      <ul>
+        <li>主機 4K 60fps、超廣角鏡（#02 #04）</li>
+        <li>無線咪 2 套、補光燈 2 盞、穩定器</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="scripts">
+  <h2>逐條腳本</h2>
+  <p class="sub">分鏡入面嘅秒數係大約，剪接時會再調整。每條片尾都會多拍一個「叫人留言或者 WhatsApp」嘅鏡頭，方便剪廣告版。</p>
+
+  <!-- 01 -->
+  <article class="sc" id="s1">
+    <div class="sc-head"><div class="sc-num">01</div><div>
+      <h3>賊仔打劫，打完第一堂</h3>
+      <div class="sc-meta"><span class="pill vis">畫面主導</span><span class="pill">約 30 秒</span><span class="pill">Day 1 · 14:00</span><span class="pill">場景 E · C · B · A</span></div>
+    </div></div>
+    <p class="why"><b>點解揀呢條：</b>賊仔衝入嚟打劫，結果被教練帶完成堂試堂。觀眾笑住睇，其實已經睇完「第一堂會做乜」：填資料、綁手帶、打 pad。</p>
+    <div class="ref"><div class="ref-strip"><img src="media/ref_De2gzEjyCuv.jpg" alt="參考片分鏡：戴頭套嘅人入健身室，最後被拍手歡迎"></div>
+      <p class="ref-cap">參考片截圖（版權屬原作者）· <a href="https://www.instagram.com/reel/De2gzEjyCuv/" target="_blank" rel="noopener">喺 Instagram 睇原片 ↗</a></p></div>
+    <div class="shots">
+      <div class="shot hd"><span>秒</span><span>畫面</span><span>對白／字幕</span></div>
+      <div class="shot"><span class="t">0–2</span><span>場景 E：賊仔戴黑布袋頭套，一手推開玻璃門衝入嚟</span><span class="say">賊：「打劫呀！啲錢全部交出嚟！」</span></div>
+      <div class="shot"><span class="t">2–5</span><span>場景 A：兩個教練拖緊地，慢慢轉頭，好淡定</span><span class="say">教練 A：「我哋冇錢喎。」</span></div>
+      <div class="shot"><span class="t">5–6</span><span>賊仔停一停，個頭側一側</span><span class="say">賊：「……咁你哋有咩？」</span></div>
+      <div class="shot"><span class="t">6–9</span><span>硬切，場景 C：賊仔坐喺前台（頭套仲戴住），教練拎 clipboard 問問題</span><span class="say"><em>字幕：</em>試堂前：先了解你身體狀況</span></div>
+      <div class="shot"><span class="t">9–13</span><span>特寫：教練幫佢綁手帶</span><span class="say"><em>字幕：</em>由綁手帶開始教</span></div>
+      <div class="shot"><span class="t">13–19</span><span>場景 B：打 pad、踢沙包、做 burpee，最後成個人趴喺地</span><span class="say">教練 A：「仲有兩組！」</span></div>
+      <div class="shot"><span class="t">19–22</span><span>場景 I：Dollar 店長行過，望住趴喺地嘅賊仔</span><span class="say"><em>（冇對白，配一聲貓叫）</em></span></div>
+      <div class="shot"><span class="t">22–27</span><span>臨演學員圍住佢拍手；白板寫「歡迎賊哥 第一堂完成 🥊」</span><span class="say">教練 B：「大家俾個掌聲賊哥！」</span></div>
+      <div class="shot"><span class="t">27–30</span><span>賊仔除低頭套，一頭汗</span><span class="say">賊：「咁……聽日幾點？」<br><em>字幕：</em>唔使打劫，留言「試堂」</span></div>
+    </div>
+    <div class="notes">
+      <p class="note"><b>道具</b>黑布袋頭套（眼位開窿，保持安全）、拖把 2 支、clipboard、白板</p>
+      <p class="cap">Caption：打劫打到變學員😂 喺 S Class，零基礎都有教練由綁手帶開始教你。留言「試堂」，我哋 DM 時間表俾你🥊</p>
+    </div>
+  </article>
+
+  <!-- 02 -->
+  <article class="sc" id="s2">
+    <div class="sc-head"><div class="sc-num">02</div><div>
+      <h3>執錢被拉入館</h3>
+      <div class="sc-meta"><span class="pill vis">畫面主導</span><span class="pill">約 11 秒</span><span class="pill">Day 2 · 14:30</span><span class="pill">場景 J → D → A → C</span><span class="pill ad">可做廣告</span></div>
+    </div></div>
+    <p class="why"><b>點解揀呢條：</b>11 秒、節奏好快，觀眾會重複睇幾次。一個上堂流程全部用動作交代，唔使講嘢。</p>
+    <div class="own"><img src="media/own_money.jpg" alt="你哋之前拍過嘅地上有錢片"><span>你哋之前拍過一條差唔多嘅（地上有張錢，被拉入館），有 7,719 次播放，大約係你哋平時嘅 3 倍。今次升級：鏡頭更低、更快，而且將成個上堂流程拍埋落去。</span></div>
+    <div class="ref"><div class="ref-strip"><img src="media/ref_DbsAk00hCl1.jpg" alt="參考片分鏡：地上有錢，路人被拉入舖"></div>
+      <p class="ref-cap">參考片截圖（版權屬原作者）· <a href="https://www.instagram.com/reel/DbsAk00hCl1/" target="_blank" rel="noopener">喺 Instagram 睇原片 ↗</a></p></div>
+    <div class="shots">
+      <div class="shot hd"><span>秒</span><span>畫面（超廣角、低角度）</span><span>聲音</span></div>
+      <div class="shot"><span class="t">0–1</span><span>場景 J：偉業街行人路，地上有張 $100 紙（或者一張「免費試堂券」）。鏡頭貼地</span><span class="say"><em>街聲</em></span></div>
+      <div class="shot"><span class="t">1–2</span><span>路人彎腰伸手去執</span><span class="say"></span></div>
+      <div class="shot"><span class="t">2–3</span><span>一隻戴住拳套嘅手由畫面外伸入嚟，捉住佢手腕</span><span class="say"><em>「嗖」一聲</em></span></div>
+      <div class="shot"><span class="t">3–4</span><span>場景 D：路人被拖過電梯大堂，招牌入鏡</span><span class="say"></span></div>
+      <div class="shot"><span class="t">4–8</span><span>每格大約半秒嘅快剪：被綁手帶 → 戴拳套 → 打 pad → 被按落 mat 拉筋 → 被塞支水 → 隻手被拉去撳 booking app「確認」</span><span class="say"><em>打 pad 聲＋BGM</em></span></div>
+      <div class="shot"><span class="t">8–10</span><span>場景 J：被推出大門，坐喺地上一臉茫然</span><span class="say"></span></div>
+      <div class="shot"><span class="t">10–11</span><span>教練同店員企喺門口，一齊九十度鞠躬</span><span class="say">「多謝晒！下星期見！」</span></div>
+    </div>
+    <div class="notes">
+      <p class="note"><b>拍攝</b>超廣角鏡（0.5x），大約 2 粒鐘。外景揀人少嘅時間，被拉嘅動作要慢拍、剪接時先加快。</p>
+      <p class="cap">Caption：一唔小心就俾我哋拉咗入嚟上堂😂 泰拳、瑜珈、普拉提、拉筋任揀｜牛頭角 JC Tower 2/F</p>
+      <p class="adv"><b>廣告版：</b>原片已經夠短，最後加 2 秒字卡「$1,100／10 堂・WhatsApp 預約試堂」。</p>
+    </div>
+  </article>
+
+  <!-- 03 -->
+  <article class="sc" id="s3">
+    <div class="sc-head"><div class="sc-num">03</div><div>
+      <h3>普通教練 vs S Class 教練</h3>
+      <div class="sc-meta"><span class="pill vis">畫面主導</span><span class="pill">約 35 秒</span><span class="pill">Day 1 · 12:00</span><span class="pill">場景 B</span><span class="pill ad">可做廣告</span></div>
+    </div></div>
+    <p class="why"><b>點解揀呢條：</b>原片有 3 萬讚。學員越亂打，教練越誇張咁讚，仲要追住佢個拳頭接 pad。觀眾會重睇，睇吓教練幾準。呢條同你哋 3.2 萬播放嗰條「POV：當你無錢請 PT」係同一個方向：「平都有 PT 級嘅照顧」。</p>
+    <div class="ref"><div class="ref-strip"><img src="media/ref_DYhd6ZxtFSm.jpg" alt="參考片分鏡：教練追住學員拳頭接 pad"></div>
+      <p class="ref-cap">參考片截圖（版權屬原作者）· <a href="https://www.instagram.com/reel/DYhd6ZxtFSm/" target="_blank" rel="noopener">喺 Instagram 睇原片 ↗</a></p></div>
+    <div class="shots">
+      <div class="shot hd"><span>秒</span><span>畫面（固定機位，全身）</span><span>對白</span></div>
+      <div class="shot"><span class="t">0–12</span><span><b>字幕：「普通 gym 教練：」</b><br>教練一手拎 pad、一手睇手機。學員打歪咗，佢都唔郁</span><span class="say">教練：「嗯……再嚟。」（打喊露）</span></div>
+      <div class="shot"><span class="t">12–30</span><span><b>字幕：「S Class 教練：」</b><br>學員亂揮、轉錯身、踢空，教練每一下都追住佢拳頭用 pad 接住。學員跌低，教練跟住蹲低都要接</span><span class="say">教練：「嘩！李小龍！」「葉問上身！」「呢下泰國都冇人接到！」</span></div>
+      <div class="shot"><span class="t">30–35</span><span>學員除拳套，好自豪咁望鏡頭；教練喺後面細細聲對鏡講</span><span class="say">學員：「我覺得我可以去打比賽。」<br>教練：「佢第一堂。」</span></div>
+    </div>
+    <div class="notes">
+      <p class="note"><b>重點</b>學員演員要「好努力咁打得好差」；教練接 pad 嘅反應要大，可以拍 3–4 次揀最好笑嗰次。</p>
+      <p class="cap">Caption：零基礎都會俾教練捧上天😂 小班教學，教練睇得到你、改得到你。留言「+1」攞試堂優惠</p>
+      <p class="adv"><b>廣告版（15 秒）：</b>直接由「S Class 教練：」開始，結尾加字卡「小班，好似有 PT 咁照顧你」＋ WhatsApp。</p>
+    </div>
+  </article>
+
+  <!-- 04 -->
+  <article class="sc" id="s4">
+    <div class="sc-head"><div class="sc-num">04</div><div>
+      <h3>偷飲教練支水，邊走邊學泰拳術語</h3>
+      <div class="sc-meta"><span class="pill vis">畫面主導</span><span class="pill">約 30 秒</span><span class="pill">Day 1 · 17:15</span><span class="pill">全場走位</span></div>
+    </div></div>
+    <p class="why"><b>點解揀呢條：</b>原片有 31 萬讚。鏡頭後面嘅人偷飲咗人哋杯嘢，被追住走，字幕逐格教一句英文。我哋將「學英文」換成「學泰拳術語」，追逐好睇，觀眾又覺得學到嘢，會 save 低。</p>
+    <div class="ref"><div class="ref-strip"><img src="media/ref_Dd_FZ9fhRp4.jpg" alt="參考片分鏡：第一身被追，畫面有教學字幕"></div>
+      <p class="ref-cap">參考片截圖（版權屬原作者）· <a href="https://www.instagram.com/reel/Dd_FZ9fhRp4/" target="_blank" rel="noopener">喺 Instagram 睇原片 ↗</a></p></div>
+    <div class="shots">
+      <div class="shot hd"><span>秒</span><span>畫面（第一身，手持）</span><span>字幕：術語＋廣東話</span></div>
+      <div class="shot"><span class="t">0–2</span><span>教練坐喺凳度飲水睇手機，鏡頭偷偷伸手攞走佢支水</span><span class="say">標題：零基礎泰拳術語！</span></div>
+      <div class="shot"><span class="t">2–4</span><span>拍攝者飲咗一啖，教練慢慢抬頭</span><span class="say"><b>Wai Kru</b>＝開打前行禮</span></div>
+      <div class="shot"><span class="t">4–8</span><span>教練追，拍攝者喺沙包之間走（場景 B）</span><span class="say"><b>Footwork</b>＝步法</span></div>
+      <div class="shot"><span class="t">8–11</span><span>教練用腳推一下沙包，沙包擺過嚟擋路</span><span class="say"><b>Teep</b>＝前踢</span></div>
+      <div class="shot"><span class="t">11–15</span><span>拍攝者伸隻手出嚟擋</span><span class="say"><b>Jab</b>＝刺拳</span></div>
+      <div class="shot"><span class="t">15–20</span><span>教練追到，兩手搭住拍攝者膊頭</span><span class="say"><b>Clinch</b>＝摟抱</span></div>
+      <div class="shot"><span class="t">20–24</span><span>拍攝者彎低身甩開</span><span class="say"><b>Slip</b>＝閃避</span></div>
+      <div class="shot"><span class="t">24–27</span><span>教練攰到撐住膝頭，拍攝者遞返支水俾佢</span><span class="say"><b>Rest</b>＝回合休息</span></div>
+      <div class="shot"><span class="t">27–30</span><span>教練飲水，拍攝者順手用噴水壺噴佢</span><span class="say">呢堂學咗幾多個？留言話我知 👇</span></div>
+    </div>
+    <div class="notes">
+      <p class="note"><b>安全</b>所有招式都係輕手、慢動作示範，唔會真打。地上嘅器材要先執好。</p>
+      <p class="cap">Caption：學泰拳術語最快嘅方法😂 Save 低，下次上堂用！S Class 小班，零基礎都教｜牛頭角 JC Tower</p>
+    </div>
+  </article>
+
+  <!-- 05 -->
+  <article class="sc" id="s5">
+    <div class="sc-head"><div class="sc-num">05</div><div>
+      <h3>「你去第二間我唔介意」</h3>
+      <div class="sc-meta"><span class="pill vis">畫面主導</span><span class="pill">約 14 秒</span><span class="pill">Day 1 · 11:20</span><span class="pill">場景 B · I</span></div>
+    </div></div>
+    <p class="why"><b>點解揀呢條：</b>原片有 4.4 萬讚。口講好大方，兩隻手就死拉住個客唔俾佢走，背景仲有第二個笑位。3 秒內就笑，觀眾會返轉頭睇背景。</p>
+    <div class="ref"><div class="ref-strip"><img src="media/ref_DZDQ1NAPoY4.jpg" alt="參考片分鏡：主持拉住客人雙腳，背景同事塞客人入車尾箱"></div>
+      <p class="ref-cap">參考片截圖（版權屬原作者）· <a href="https://www.instagram.com/reel/DZDQ1NAPoY4/" target="_blank" rel="noopener">喺 Instagram 睇原片 ↗</a></p></div>
+    <div class="shots">
+      <div class="shot hd"><span>秒</span><span>畫面（一鏡到底、固定機位）</span><span>對白</span></div>
+      <div class="shot"><span class="t">0–5</span><span>教練 A 對住鏡頭，兩手拉住一個學員嘅兩隻腳（學員趴喺地，鏡頭只見到對腳），一路拖返入館</span><span class="say">「成日有人問我：學生去第二間拳館，你會唔會唔開心？」</span></div>
+      <div class="shot"><span class="t">5–9</span><span>教練鬆手企好。背景：教練 B 同店員用綁手帶將學員綁喺沙包度</span><span class="say">「梗係唔會啦。」</span></div>
+      <div class="shot"><span class="t">9–14</span><span>背景：Dollar 店長坐喺學員身上。教練 A 好認真</span><span class="say">「你鍾意去邊間都得㗎……我哋好開明。」</span></div>
+    </div>
+    <div class="notes">
+      <p class="note"><b>重點</b>前景教練要好認真、唔好笑場；背景動作要清楚睇到。拍嘅時候用監視器 check 構圖。</p>
+      <p class="cap">Caption：真心唔介意😇（不過月費唔使簽長約，你都唔會想走）留言「試堂」</p>
+    </div>
+  </article>
+
+  <!-- 06 -->
+  <article class="sc" id="s6">
+    <div class="sc-head"><div class="sc-num">06</div><div>
+      <h3>「寫字樓入面嘅泰拳館？應該好細啩」</h3>
+      <div class="sc-meta"><span class="pill vis">畫面主導</span><span class="pill">約 35 秒</span><span class="pill">Day 2 · 13:00</span><span class="pill">場景 J ＋ 館內</span><span class="pill ad">可做廣告</span></div>
+    </div></div>
+    <p class="why"><b>點解揀呢條：</b>新客心入面嘅疑問，由一個「懷疑者」講出口，每句之後即刻切畫面證明。等於將常見問題拍成短劇，最啱做廣告。</p>
+    <div class="ref"><div class="ref-strip"><img src="media/ref_Dd7DIfiyvSu.jpg" alt="參考片分鏡：懷疑者叉腰質疑，之後切去室內畫面"></div>
+      <p class="ref-cap">參考片截圖（版權屬原作者）· <a href="https://www.instagram.com/reel/Dd7DIfiyvSu/" target="_blank" rel="noopener">喺 Instagram 睇原片 ↗</a></p></div>
+    <div class="shots">
+      <div class="shot hd"><span>秒</span><span>畫面</span><span>對白</span></div>
+      <div class="shot"><span class="t">0–3</span><span>場景 J：店員喺 JC Tower 門口舉住「試堂」紙牌</span><span class="say">懷疑者（墨鏡、叉腰）：「做咩呀？」</span></div>
+      <div class="shot"><span class="t">3–6</span><span>懷疑者擰頭望上 JC Tower</span><span class="say">「泰拳館喺寫字樓入面？應該好細啩。」</span></div>
+      <div class="shot"><span class="t">6–9</span><span>硬切，場景 A：全場慢慢推鏡</span><span class="say">店員（畫外音）：「3000 呎。」</span></div>
+      <div class="shot"><span class="t">9–12</span><span>返去懷疑者</span><span class="say">「泰拳館……應該好臭。」</span></div>
+      <div class="shot"><span class="t">12–15</span><span>硬切：沖涼間、儲物櫃、噴消毒</span><span class="say">「有沖涼、有儲物櫃，定時消毒。」</span></div>
+      <div class="shot"><span class="t">15–18</span><span>返去懷疑者</span><span class="say">「我零基礎，實跟唔上。」</span></div>
+      <div class="shot"><span class="t">18–22</span><span>硬切，場景 B：教練幫新學員綁手帶、慢動作教出拳</span><span class="say">「由綁手帶開始教。」</span></div>
+      <div class="shot"><span class="t">22–25</span><span>返去懷疑者</span><span class="say">「咁一定好貴。」</span></div>
+      <div class="shot"><span class="t">25–28</span><span>硬切：價錢大字</span><span class="say">「平均 $110 一堂，唔使簽長約。」</span></div>
+      <div class="shot"><span class="t">28–32</span><span>懷疑者托住下巴</span><span class="say">「Hmm……好到有啲假。」</span></div>
+      <div class="shot"><span class="t">32–35</span><span>店員問佢；懷疑者除低墨鏡，大步行入大堂</span><span class="say">店員：「上嚟睇吓？」<br>懷疑者：「睇！」</span></div>
+    </div>
+    <div class="notes">
+      <p class="cap">Caption：你心入面嘅問題，一次答晒👀 東九龍 CBD，巴士站直達｜WhatsApp 6953 7108 預約試堂</p>
+      <p class="adv"><b>廣告版（20 秒）：</b>保留「好細」「零基礎」「好貴」三個問題，結尾加 WhatsApp 字卡。目標：觀塘、九龍灣、牛頭角一帶返工嘅人。</p>
+    </div>
+  </article>
+
+  <!-- 07 -->
+  <article class="sc" id="s7">
+    <div class="sc-head"><div class="sc-num">07</div><div>
+      <h3>等拳套掟中教練</h3>
+      <div class="sc-meta"><span class="pill vis">畫面主導</span><span class="pill">約 12 秒</span><span class="pill">Day 1 · 10:50</span><span class="pill">場景 C</span></div>
+    </div></div>
+    <p class="why"><b>點解揀呢條：</b>第一秒就俾觀眾見到「有人準備掟嘢」。觀眾為咗等佢掟中而睇到尾，教練就趁住呢 10 秒講完優惠。</p>
+    <div class="ref"><div class="ref-strip"><img src="media/ref_DXelU8tCgno.jpg" alt="參考片分鏡：同事準備掟箱，老闆對鏡講嘢"></div>
+      <p class="ref-cap">參考片截圖（版權屬原作者）· <a href="https://www.instagram.com/reel/DXelU8tCgno/" target="_blank" rel="noopener">喺 Instagram 睇原片 ↗</a></p></div>
+    <div class="shots">
+      <div class="shot hd"><span>秒</span><span>畫面</span><span>對白</span></div>
+      <div class="shot"><span class="t">0–1</span><span>闊鏡：店員企喺遠處，舉高一隻拳套瞄準坐喺前台嘅教練</span><span class="say"><em>（冇對白）</em></span></div>
+      <div class="shot"><span class="t">1–9</span><span>中近鏡：教練對住鏡頭，好淡定</span><span class="say">「你係咪等緊隻拳套掟中我？我都等緊你留言『試堂』，攞 S Class 時間表同最新優惠……」</span></div>
+      <div class="shot"><span class="t">9–11</span><span>教練停一停，望住鏡頭</span><span class="say">「……你仲睇緊？」</span></div>
+      <div class="shot"><span class="t">11–12</span><span>軟拳套飛入畫面，掟中佢膊頭</span><span class="say"><em>「啪」</em></span></div>
+    </div>
+    <div class="notes"><p class="note"><b>道具</b>軟身拳套（唔好用硬物），掟膊頭唔好掟面。</p></div>
+  </article>
+
+  <!-- 08 -->
+  <article class="sc" id="s8">
+    <div class="sc-head"><div class="sc-num">08</div><div>
+      <h3>教練想鑽去字幕後面</h3>
+      <div class="sc-meta"><span class="pill vis">畫面主導</span><span class="pill">約 7 秒</span><span class="pill">Day 1 · 10:30</span><span class="pill">場景 F</span></div>
+    </div></div>
+    <p class="why"><b>點解揀呢條：</b>玩 IG 熱門嘅「將字放喺人後面」效果。教練真係想行去字幕後面，失敗之後一句帶返去 S Class。7 秒好易重播。</p>
+    <div class="ref"><div class="ref-strip"><img src="media/ref_DfpUyKvh46l.jpg" alt="參考片分鏡：字幕喺畫面中間，主持想鑽過去"></div>
+      <p class="ref-cap">參考片截圖（版權屬原作者）· <a href="https://www.instagram.com/reel/DfpUyKvh46l/" target="_blank" rel="noopener">喺 Instagram 睇原片 ↗</a></p></div>
+    <div class="shots">
+      <div class="shot hd"><span>秒</span><span>畫面</span><span>對白</span></div>
+      <div class="shot"><span class="t">0–4</span><span>字幕「點樣將啲字放喺自己後面」固定喺畫面中間。教練喺擂台前面蹲低、側身、踮腳，想鑽過去</span><span class="say"><em>（喘氣聲）</em></span></div>
+      <div class="shot"><span class="t">4–7</span><span>教練放棄，行近鏡頭攤手</span><span class="say">「呢啲我哋唔識。但係 45 分鐘教你出一身汗，我哋就識。」</span></div>
+    </div>
+    <div class="notes"><p class="note"><b>拍攝</b>我哋會喺監視器貼紙標住字幕位置，教練對住嗰個位做動作。</p></div>
+  </article>
+
+  <!-- 09 -->
+  <article class="sc" id="s9">
+    <div class="sc-head"><div class="sc-num">09</div><div>
+      <h3>如果全世界嘅教練消失咗</h3>
+      <div class="sc-meta"><span class="pill">對白主導</span><span class="pill vis">畫面輔助</span><span class="pill">約 55 秒</span><span class="pill">另約半日</span></div>
+    </div></div>
+    <p class="why"><b>點解揀呢條：</b>原片係香港保險業做嘅，用「如果……消失」引起好奇，再逐日講世界變成點，最後將一個成日被人嫌嘅角色變成好人。教練都一樣：平時成日叫人「做多十下」，但冇咗佢就麻煩。</p>
+    <div class="ref"><div class="ref-strip"><img src="media/ref_DfsTUoKTemF.jpg" alt="參考片分鏡：3D 公仔動畫，逐日字卡"></div>
+      <p class="ref-cap">參考片截圖（版權屬原作者）· <a href="https://www.instagram.com/reel/DfsTUoKTemF/" target="_blank" rel="noopener">喺 Instagram 睇原片 ↗</a></p></div>
+    <div class="vo">
+      <p>如果有一日，全世界嘅運動教練一夜之間消失晒，會變成點？</p>
+      <p><b>第一日</b>，大家都好開心：冇人叫你做多十下，冇人話你姿勢錯。</p>
+      <p><b>第三日</b>，阿明自己去 gym 學人舉重，閃咗條腰，請咗一個禮拜假。</p>
+      <p><b>第七日</b>，觀塘寫字樓入面一半人肩頸痛、寒背，冇人教佢哋拉筋。</p>
+      <p><b>第十四日</b>，個個都買咗年卡，去咗兩次就冇再去。</p>
+      <p><b>第三十日</b>，阿明打開衣櫃，條褲著唔落。</p>
+      <p>原來教練唔係淨係叫你做多十下，係喺你想放棄嗰陣，企喺你隔籬嘅人。</p>
+      <p>所以下次教練叫你嚟試堂，或者值得嚟一次。</p>
+    </div>
+    <div class="shots">
+      <div class="shot hd"><span>場</span><span>畫面（真人版，一個演員演阿明）</span><span>畫面字卡</span></div>
+      <div class="shot"><span class="t">1</span><span>阿明喺梳化攤住，好開心咁食薯片</span><span class="say">第一日</span></div>
+      <div class="shot"><span class="t">2</span><span>阿明喺 gym 舉重舉到「咔」一聲，捉住條腰</span><span class="say">第三日</span></div>
+      <div class="shot"><span class="t">3</span><span>寫字樓 cubicle，成排同事揼骨、轉頸</span><span class="say">第七日</span></div>
+      <div class="shot"><span class="t">4</span><span>一張年卡放喺枱面積塵</span><span class="say">第十四日</span></div>
+      <div class="shot"><span class="t">5</span><span>阿明喺屋企扣唔埋條褲</span><span class="say">第三十日</span></div>
+      <div class="shot"><span class="t">6</span><span>場景 E：教練企喺 S Class 門口向阿明揮手，阿明行入去</span><span class="say">（最後一句旁白）</span></div>
+    </div>
+    <div class="notes">
+      <p class="note"><b>兩種拍法</b>A．真人版（上面嘅分鏡，要借寫字樓同屋企場景）；B．動畫版，同參考片一樣用 3D 公仔，唔使拍攝，但製作時間長啲。</p>
+      <p class="cap">Caption：教練唔係淨係識叫你做多十下💪 小班教學，教練睇得到你、改得到你。留言「試堂」</p>
+    </div>
+  </article>
+
+  <!-- 10 -->
+  <article class="sc" id="s10">
+    <div class="sc-head"><div class="sc-num">10</div><div>
+      <h3>老闆日記：喺牛頭角開泰拳館</h3>
+      <div class="sc-meta"><span class="pill">對白主導</span><span class="pill">約 35 秒</span><span class="pill">Day 1 · 16:00</span><span class="pill">每句換一個位</span></div>
+    </div></div>
+    <p class="why"><b>點解揀呢條：</b>老闆坦白講開館嘅真實情況，觀眾會想追住睇後續。可以變成每星期一集嘅「老闆日記」系列，講租場、Friday Night、請教練等等。</p>
+    <div class="ref"><div class="ref-strip"><img src="media/ref_De2nXcCh0VE.jpg" alt="參考片分鏡：年輕老闆喺拳館唔同位置講嘢"></div>
+      <p class="ref-cap">參考片截圖（版權屬原作者）· <a href="https://www.instagram.com/reel/De2nXcCh0VE/" target="_blank" rel="noopener">喺 Instagram 睇原片 ↗</a></p></div>
+    <div class="shots">
+      <div class="shot hd"><span>位置</span><span>畫面</span><span>對白</span></div>
+      <div class="shot"><span class="t">J</span><span>JC Tower 門口，老闆行出嚟</span><span class="say">「我喺牛頭角開咗間泰拳館。」</span></div>
+      <div class="shot"><span class="t">F</span><span>坐喺擂台邊</span><span class="say">「學到第一課：泰拳唔係個個都想打。」</span></div>
+      <div class="shot"><span class="t">A</span><span>下晝冇人嘅全場，Dollar 店長行過</span><span class="say">「有啲日子好靜，成間館得返我同隻貓。」</span></div>
+      <div class="shot"><span class="t">G</span><span>小班上緊堂</span><span class="say">「真正多人嚟嘅，係 fitness 同零基礎小班。」</span></div>
+      <div class="shot"><span class="t">B</span><span>學員打緊 pad</span><span class="say">「大部分人唔係想上擂台，係想瘦、想減壓、想有人教。」</span></div>
+      <div class="shot"><span class="t">—</span><span>插入你哋 in-house fight 嘅片段</span><span class="say">「所以我哋先教佢哋鍾意運動，想打比賽嘅，再慢慢帶佢哋上擂台。」</span></div>
+      <div class="shot"><span class="t">C</span><span>前台，望住鏡頭</span><span class="say">「想睇一間牛頭角小拳館點樣生存，follow 我。」</span></div>
+    </div>
+  </article>
+
+  <!-- 11 -->
+  <article class="sc" id="s11">
+    <div class="sc-head"><div class="sc-num">11</div><div>
+      <h3>3 個理由，香港打工仔應該學泰拳</h3>
+      <div class="sc-meta"><span class="pill">對白主導</span><span class="pill">約 30 秒</span><span class="pill">Day 1 · 16:45</span><span class="pill">場景 B ＋ 插入鏡頭</span><span class="pill ad">可做廣告</span></div>
+    </div></div>
+    <p class="why"><b>點解揀呢條：</b>清單格式，一聽就明；教練有氣場，配逐隻字彈出嘅大字幕。最易拍、最易轉做廣告。</p>
+    <div class="ref"><div class="ref-strip"><img src="media/ref_Czv50e-Orox.jpg" alt="參考片分鏡：教練對鏡講，大字幕"></div>
+      <p class="ref-cap">參考片截圖（版權屬原作者）· <a href="https://www.instagram.com/reel/Czv50e-Orox/" target="_blank" rel="noopener">喺 Instagram 睇原片 ↗</a></p></div>
+    <div class="shots">
+      <div class="shot hd"><span>段落</span><span>插入畫面</span><span>教練對白</span></div>
+      <div class="shot"><span class="t">開場</span><span>觀塘放工人潮</span><span class="say">「3 個理由，香港打工仔應該學泰拳。」</span></div>
+      <div class="shot"><span class="t">1</span><span>學員重拳打沙包，慢鏡頭</span><span class="say">「減壓。開會受晒氣？打沙包出氣，好過返屋企對住部電話。」</span></div>
+      <div class="shot"><span class="t">2</span><span>汗滴落 mat 特寫</span><span class="say">「爆汗。一堂結合泰拳、HIIT 同功能性訓練，係最快出汗嘅運動之一。」</span></div>
+      <div class="shot"><span class="t">3</span><span>女學員起腳</span><span class="say">「自信。識保護自己，行路都企直啲。」</span></div>
+      <div class="shot"><span class="t">收尾</span><span>全班大合照</span><span class="say">「零基礎都得，留言『試堂』。」</span></div>
+    </div>
+    <div class="notes"><p class="adv"><b>廣告版（15 秒）：</b>3 個理由每個 4 秒，結尾 WhatsApp 字卡。</p></div>
+  </article>
+
+  <!-- 12 -->
+  <article class="sc" id="s12">
+    <div class="sc-head"><div class="sc-num">12</div><div>
+      <h3>人哋話東九龍最高私隱度嘅泰拳館</h3>
+      <div class="sc-meta"><span class="pill vis">畫面主導</span><span class="pill">約 24 秒</span><span class="pill">Day 2 · 16:30</span><span class="pill">場景 J → D → 全場</span><span class="pill ad">可做廣告</span></div>
+    </div></div>
+    <p class="why"><b>點解揀呢條：</b>一個人、一部手機就拍得。「人哋話係最好」會引起好奇；之後跟住主持行一轉，觀眾等於上門睇咗場地。</p>
+    <div class="ref"><div class="ref-strip"><img src="media/ref_DfRwmeWBMTf.jpg" alt="參考片分鏡：主持喺門口講，之後第一身行入拳館"></div>
+      <p class="ref-cap">參考片截圖（版權屬原作者）· <a href="https://www.instagram.com/reel/DfRwmeWBMTf/" target="_blank" rel="noopener">喺 Instagram 睇原片 ↗</a></p></div>
+    <div class="shots">
+      <div class="shot hd"><span>秒</span><span>畫面</span><span>對白／字幕</span></div>
+      <div class="shot"><span class="t">0–3</span><span>場景 J：主持背住 JC Tower</span><span class="say">「呢度係人哋話東九龍最高私隱度嘅泰拳館，入去睇吓。」</span></div>
+      <div class="shot"><span class="t">3–6</span><span>第一身：入大堂、撳 lift「2」、推門（場景 D）</span><span class="say"><em>字幕：</em>牛頭角 JC Tower 2/F</span></div>
+      <div class="shot"><span class="t">6–18</span><span>跟住主持背脊行：擂台、沙包區、瑜珈班、更衣室、Dollar 店長</span><span class="say"><em>字幕逐格出：</em>3000 呎／小班／沖涼＋儲物櫃</span></div>
+      <div class="shot"><span class="t">18–24</span><span>主持轉身對鏡</span><span class="say">「WhatsApp 6953 7108 預約試堂。」</span></div>
+    </div>
+    <div class="notes"><p class="adv"><b>廣告版：</b>原片長度啱用，揀有學員上緊堂嘅時段拍，畫面會熱鬧啲。</p></div>
+  </article>
+
+  <!-- 13 -->
+  <article class="sc" id="s13">
+    <div class="sc-head"><div class="sc-num">13</div><div>
+      <h3>S Class after work 品牌片</h3>
+      <div class="sc-meta"><span class="pill vis">畫面主導</span><span class="pill">約 36 秒</span><span class="pill">Day 2 · 17:15–21:00</span><span class="pill">場景 E · C · G · H</span><span class="pill ad">可做廣告</span></div>
+    </div></div>
+    <p class="why"><b>點解揀呢條：</b>畫面靚、品牌感強，適合做置頂片同主力廣告片。旁白中英夾雜，啱觀塘返工嘅人。</p>
+    <div class="ref"><div class="ref-strip"><img src="media/ref_DUrXjmeEsTp.jpg" alt="參考片分鏡：兩個主持喺門口，之後食物同客人特寫"></div>
+      <p class="ref-cap">參考片截圖（版權屬原作者）· <a href="https://www.instagram.com/reel/DUrXjmeEsTp/" target="_blank" rel="noopener">喺 Instagram 睇原片 ↗</a></p></div>
+    <div class="vo"><p>「如果你喺東九龍搵緊一間唔使驚跟唔上嘅運動館，you just found it。喺 S Class，運動唔止係運動，係你 after work 嘅 routine。由叫得出你個名嘅教練，到泰拳、瑜珈、普拉提、拉筋任你揀；lunch time 打一堂，放工再嚟拉個筋。Friday night 仲有 Night Club Boxing。無論你係想減肥、減壓，定係想識班新朋友，S Class 都等緊你。」</p></div>
+    <div class="shots">
+      <div class="shot hd"><span>段落</span><span>畫面</span><span>旁白配合</span></div>
+      <div class="shot"><span class="t">開場</span><span>場景 E：兩個學員企喺 logo 牆前面，對鏡講第一句</span><span class="say">「……you just found it。」</span></div>
+      <div class="shot"><span class="t">教練</span><span>場景 C：前台教練叫學員個名，擊拳打招呼</span><span class="say">「由叫得出你個名嘅教練……」</span></div>
+      <div class="shot"><span class="t">課程</span><span>場景 G：泰拳、瑜珈、普拉提、拉筋，每樣 1–2 秒</span><span class="say">「……任你揀」</span></div>
+      <div class="shot"><span class="t">夜晚</span><span>場景 H：Friday Night 燈光、音樂、學員擊掌</span><span class="say">「Friday night 仲有 Night Club Boxing。」</span></div>
+      <div class="shot"><span class="t">收尾</span><span>Logo＋地址＋WhatsApp</span><span class="say">「S Class 都等緊你。」</span></div>
+    </div>
+    <div class="notes"><p class="adv"><b>廣告版：</b>36 秒完整版做置頂；另剪 15 秒版本（開場＋課程＋Friday Night）落廣告。</p></div>
+  </article>
+</section>
+
+<section id="before">
+  <h2>出片前要準備</h2>
+  <div class="two">
+    <div class="box">
+      <h3>留言自動回覆</h3>
+      <p style="margin:6px 0 0">好幾條片都叫人留言「試堂」或者「+1」。出片前要設定好自動 DM，有人留言就即刻收到時間表同預約方法，咁先唔會走失查詢。我哋可以幫手設定。</p>
+    </div>
+    <div class="box">
+      <h3>請你哋確認</h3>
+      <ul>
+        <li>試堂優惠同價錢（腳本暫時用 $1,100／10 堂、平均 $110 一堂）</li>
+        <li>邊兩日方便拍，同邊段時間冇堂</li>
+        <li>邊位教練、店員肯出鏡；需唔需要我哋搵學員演員</li>
+        <li>第 9 條想拍真人版定做動畫</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>由 Weefedia 整理 · 2026 年 11 月 · 場景相片截自 @sclassstudio 嘅片 · 參考片截圖版權屬原作者，只作拍攝參考</footer>
+</main>
+</body></html>
